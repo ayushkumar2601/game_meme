@@ -3,28 +3,28 @@ const CHARACTERS = [
     {
         id: 1,
         name: "Size Beast",
-        image: "/public/1.jpeg",
+        image: "./public/1.jpeg",
         ability: "size_boost",
         description: "Grows massive for power"
     },
     {
         id: 2,
         name: "Sound Blaster", 
-        image: "/public/2.jpeg",
+        image: "./public/2.jpeg",
         ability: "sound_power",
         description: "Sonic boom devastation"
     },
     {
         id: 3,
         name: "Toxic Thrower",
-        image: "/public/3.jpeg", 
+        image: "./public/3.jpeg", 
         ability: "green_projectile",
         description: "Throws toxic waste"
     },
     {
         id: 4,
         name: "Laser Eyes",
-        image: "/public/4.jpeg",
+        image: "./public/4.jpeg",
         ability: "laser_beam",
         description: "Deadly eye lasers"
     }
@@ -82,7 +82,7 @@ function preloadAudio() {
     ];
     
     audioFiles.forEach((file, index) => {
-        const audio = new Audio(`/public/audio/${file}`);
+        const audio = new Audio(`./public/${file}`);
         audio.volume = masterVolume;
         audio.preload = 'auto';
         

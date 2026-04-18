@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Meme Fighters: Chaos Duel</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -58,7 +58,7 @@
         <div class="character-grid">
             <div class="character-card" data-character="1">
                 <div class="character-avatar">
-                    <img src="/public/1.jpeg" alt="Size Beast" class="character-image">
+                    <img src="./public/1.jpeg" alt="Size Beast" class="character-image">
                 </div>
                 <h3>Size Beast</h3>
                 <p>Ability: Size Boost 📏</p>
@@ -66,7 +66,7 @@
             </div>
             <div class="character-card" data-character="2">
                 <div class="character-avatar">
-                    <img src="/public/2.jpeg" alt="Sound Blaster" class="character-image">
+                    <img src="./public/2.jpeg" alt="Sound Blaster" class="character-image">
                 </div>
                 <h3>Sound Blaster</h3>
                 <p>Ability: Sonic Boom 🔊</p>
@@ -74,7 +74,7 @@
             </div>
             <div class="character-card" data-character="3">
                 <div class="character-avatar">
-                    <img src="/public/3.jpeg" alt="Toxic Thrower" class="character-image">
+                    <img src="./public/3.jpeg" alt="Toxic Thrower" class="character-image">
                 </div>
                 <h3>Toxic Thrower</h3>
                 <p>Ability: Green Projectile 🟢</p>
@@ -82,7 +82,7 @@
             </div>
             <div class="character-card" data-character="4">
                 <div class="character-avatar">
-                    <img src="/public/4.jpeg" alt="Laser Eyes" class="character-image">
+                    <img src="./public/4.jpeg" alt="Laser Eyes" class="character-image">
                 </div>
                 <h3>Laser Eyes</h3>
                 <p>Ability: Laser Beam 🔴</p>
@@ -116,6 +116,23 @@
         </div>
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="messages"></div>
+        
+        <!-- Mobile Controls -->
+        <div id="mobileControls" class="mobile-controls">
+            <div class="mobile-dpad">
+                <button class="dpad-btn dpad-up" data-key="ArrowUp">↑</button>
+                <div class="dpad-middle">
+                    <button class="dpad-btn dpad-left" data-key="ArrowLeft">←</button>
+                    <button class="dpad-btn dpad-right" data-key="ArrowRight">→</button>
+                </div>
+                <button class="dpad-btn dpad-down" data-key="ArrowDown">↓</button>
+            </div>
+            <div class="mobile-actions">
+                <button class="action-btn attack-btn" data-action="attack">ATTACK</button>
+                <button class="action-btn ability-btn" data-action="ability">ABILITY</button>
+                <button class="action-btn ultimate-btn" data-action="ultimate">ULTIMATE</button>
+            </div>
+        </div>
     </div>
 
     <div id="gameOver" class="screen hidden">

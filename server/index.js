@@ -340,11 +340,18 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Local access: http://localhost:${PORT}`);
-  console.log(`LAN access: Use your local IP address (e.g., http://192.168.x.x:${PORT})`);
-  console.log(`To find your IP:`);
-  console.log(`  Windows: ipconfig`);
-  console.log(`  Mac/Linux: ifconfig`);
+const HOST = process.env.HOST || '0.0.0.0';
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+server.listen(PORT, HOST, () => {
+  console.log(`Server running on port ${PORT} in ${NODE_ENV} mode`);
+  if (NODE_ENV === 'development') {
+    console.log(`Local access: http://localhost:${PORT}`);
+    console.log(`LAN access: Use your local IP address (e.g., http://192.168.x.x:${PORT})`);
+    console.log(`To find your IP:`);
+    console.log(`  Windows: ipconfig`);
+    console.log(`  Mac/Linux: ifconfig`);
+  } else {
+    console.log(`Production server running on ${HOST}:${PORT}`);
+  }
 });
