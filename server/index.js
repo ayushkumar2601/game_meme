@@ -217,10 +217,20 @@ io.on('connection', (socket) => {
     );
     
     if (distance <= 80) {
-      target.health = Math.max(0, target.health - 10);
+      // Calculate damage with size boost
+      let damage = 10;
+      if (attacker.sizeBoosted) {
+        damage = 20; // Double damage when size boosted
+      }
+      
+      target.health = Math.max(0, target.health - damage);
       
       io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
-      io.to(playerInfo.roomCode).emit('attack', { attacker: playerInfo.playerNumber, hit: true });
+      io.to(playerInfo.roomCode).emit('attack', { 
+        attacker: playerInfo.playerNumber, 
+        hit: true,
+        damage: damage 
+      });
       
       if (target.health <= 0) {
         const memeText = memeTexts[Math.floor(Math.random() * memeTexts.length)];
@@ -231,7 +241,10 @@ io.on('connection', (socket) => {
         });
       }
     } else {
-      io.to(playerInfo.roomCode).emit('attack', { attacker: playerInfo.playerNumber, hit: false });
+      io.to(playerInfo.roomCode).emit('attack', { 
+        attacker: playerInfo.playerNumber, 
+        hit: false 
+      });
     }
   });
 
@@ -251,19 +264,71 @@ io.on('connection', (socket) => {
     const ability = attacker.ability;
     
     switch (ability) {
+      case 'size_boost':
+        // Size boost - increases damage for 3 seconds
+        attacker.sizeBoosted = true;
+        setTimeout(() => {
+          if (room.gameState && room.gameState[attackerKey]) {
+            attacker.sizeBoosted = false;
+            io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+          }
+        }, 3000);
+        break;
+        
+      case 'sound_power':
+        // Sonic boom - area damage
+        const distance = Math.sqrt(
+          Math.pow(attacker.x - target.x, 2) + Math.pow(attacker.y - target.y, 2)
+        );
+        if (distance <= 120) {
+          target.health = Math.max(0, target.health - 25);
+          if (target.health <= 0) {
+            const memeText = memeTexts[Math.floor(Math.random() * memeTexts.length)];
+            io.to(playerInfo.roomCode).emit('gameOver', {
+              winner: playerInfo.playerNumber,
+              loser: playerInfo.playerNumber === 1 ? 2 : 1,
+              memeText
+            });
+          }
+        }
+        break;
+        
+      case 'green_projectile':
+        // Toxic projectile - handled on client side, damage applied when projectile hits
+        // Server just acknowledges the ability use
+        break;
+        
+      case 'laser_beam':
+        // Laser beam - instant damage
+        target.health = Math.max(0, target.health - 30);
+        if (target.health <= 0) {
+          const memeText = memeTexts[Math.floor(Math.random() * memeTexts.length)];
+          io.to(playerInfo.roomCode).emit('gameOver', {
+            winner: playerInfo.playerNumber,
+            loser: playerInfo.playerNumber === 1 ? 2 : 1,
+            memeText
+          });
+        }
+        break;
+        
+      // Legacy abilities for backward compatibility
       case 'freeze':
         target.canMove = false;
         setTimeout(() => {
-          target.canMove = true;
-          io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+          if (room.gameState && room.gameState[targetKey]) {
+            target.canMove = true;
+            io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+          }
         }, 2000);
         break;
         
       case 'reverse':
         target.reversed = true;
         setTimeout(() => {
-          target.reversed = false;
-          io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+          if (room.gameState && room.gameState[targetKey]) {
+            target.reversed = false;
+            io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+          }
         }, 2000);
         break;
         
@@ -306,6 +371,35 @@ io.on('connection', (socket) => {
     target.health = Math.max(0, target.health - 30);
     
     io.to(playerInfo.roomCode).emit('ultimateUsed', { player: playerInfo.playerNumber });
+    io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
+    
+    if (target.health <= 0) {
+      const memeText = memeTexts[Math.floor(Math.random() * memeTexts.length)];
+      io.to(playerInfo.roomCode).emit('gameOver', {
+        winner: playerInfo.playerNumber,
+        loser: playerInfo.playerNumber === 1 ? 2 : 1,
+        memeText
+      });
+    }
+  });
+
+  // Handle projectile hits from client
+  socket.on('projectileHit', (data) => {
+    const playerInfo = players.get(socket.id);
+    if (!playerInfo) return;
+    
+    const room = rooms.get(playerInfo.roomCode);
+    if (!room || !room.gameStarted) return;
+    
+    const targetKey = playerInfo.playerNumber === 1 ? 'player2' : 'player1';
+    const target = room.gameState[targetKey];
+    
+    if (!target) return;
+    
+    // Apply projectile damage
+    const damage = data.damage || 15;
+    target.health = Math.max(0, target.health - damage);
+    
     io.to(playerInfo.roomCode).emit('stateUpdate', room.gameState);
     
     if (target.health <= 0) {

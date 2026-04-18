@@ -2,28 +2,28 @@
 const CHARACTERS = [
     {
         id: 1,
-        name: "Size Beast",
+        name: "Sallu Bhaiii",
         image: "./public/1.jpeg",
         ability: "size_boost",
         description: "Grows massive for power"
     },
     {
         id: 2,
-        name: "Sound Blaster", 
+        name: "Kanye East", 
         image: "./public/2.jpeg",
         ability: "sound_power",
         description: "Sonic boom devastation"
     },
     {
         id: 3,
-        name: "Toxic Thrower",
+        name: "Hakla ShahRuk",
         image: "./public/3.jpeg", 
         ability: "green_projectile",
         description: "Throws toxic waste"
     },
     {
         id: 4,
-        name: "Laser Eyes",
+        name: "Modi ji",
         image: "./public/4.jpeg",
         ability: "laser_beam",
         description: "Deadly eye lasers"
@@ -269,6 +269,82 @@ class MemeFighters {
         window.addEventListener('keyup', (e) => {
             this.keys[e.code] = false;
         });
+        
+        // Mobile touch controls
+        this.setupMobileControls();
+    }
+    
+    setupMobileControls() {
+        // D-pad controls
+        document.querySelectorAll('.dpad-btn').forEach(btn => {
+            const key = btn.dataset.key;
+            
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.keys[key] = true;
+                btn.classList.add('active');
+            });
+            
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.keys[key] = false;
+                btn.classList.remove('active');
+            });
+            
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                this.keys[key] = false;
+                btn.classList.remove('active');
+            });
+        });
+        
+        // Action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            const action = btn.dataset.action;
+            
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                btn.classList.add('active');
+                
+                switch (action) {
+                    case 'attack':
+                        this.handleAttack();
+                        break;
+                    case 'ability':
+                        this.handleAbility();
+                        break;
+                    case 'ultimate':
+                        this.handleUltimate();
+                        break;
+                }
+            });
+            
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                btn.classList.remove('active');
+            });
+        });
+        
+        // Prevent scrolling on mobile during gameplay
+        document.addEventListener('touchmove', (e) => {
+            if (document.getElementById('game').classList.contains('hidden') === false) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Show/hide mobile controls based on screen
+        this.updateMobileControlsVisibility();
+    }
+    
+    updateMobileControlsVisibility() {
+        const mobileControls = document.getElementById('mobileControls');
+        const gameScreen = document.getElementById('game');
+        
+        if (!gameScreen.classList.contains('hidden')) {
+            mobileControls.style.display = 'flex';
+        } else {
+            mobileControls.style.display = 'none';
+        }
     }
     
     // EVENT LISTENERS
@@ -488,6 +564,12 @@ class MemeFighters {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         
+        // Mobile canvas scaling
+        this.setupCanvasScaling();
+        
+        // Update mobile controls visibility
+        this.updateMobileControlsVisibility();
+        
         // Update UI labels
         if (this.isSoloMode) {
             const difficultyEmojis = {
@@ -515,6 +597,41 @@ class MemeFighters {
         
         // Start the main game loop
         this.startGameLoop();
+    }
+    
+    setupCanvasScaling() {
+        const canvas = this.canvas;
+        const container = canvas.parentElement;
+        
+        // Set up responsive canvas
+        const resizeCanvas = () => {
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const aspectRatio = GAME_CONFIG.CANVAS_WIDTH / GAME_CONFIG.CANVAS_HEIGHT;
+            
+            let canvasWidth = containerWidth;
+            let canvasHeight = containerWidth / aspectRatio;
+            
+            // If height is too big, scale by height instead
+            if (canvasHeight > containerHeight - 100) {
+                canvasHeight = containerHeight - 100;
+                canvasWidth = canvasHeight * aspectRatio;
+            }
+            
+            // Apply CSS scaling while keeping internal resolution
+            canvas.style.width = canvasWidth + 'px';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Keep internal resolution for crisp rendering
+            canvas.width = GAME_CONFIG.CANVAS_WIDTH;
+            canvas.height = GAME_CONFIG.CANVAS_HEIGHT;
+        };
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 100);
+        });
     }
     
     // MAIN GAME LOOP - 60 FPS with proper timing
@@ -732,7 +849,15 @@ class MemeFighters {
     }
     
     handleProjectileHit(projectile, target) {
-        // Apply damage
+        // Notify server of projectile hit (for multiplayer synchronization)
+        if (!this.isSoloMode && projectile.owner === this.playerNumber) {
+            this.socket.emit('projectileHit', { 
+                damage: projectile.damage,
+                targetId: target.id 
+            });
+        }
+        
+        // Apply damage locally (will be overridden by server update in multiplayer)
         target.health = Math.max(0, target.health - projectile.damage);
         
         // Visual feedback with enhanced animations
@@ -746,7 +871,7 @@ class MemeFighters {
         // Damage number
         this.addDamageNumber(target.x, target.y, projectile.damage);
         
-        // Check game over
+        // Check game over (solo mode only - multiplayer handled by server)
         if (target.health <= 0 && this.isSoloMode) {
             const playerWon = target.id === 'bot';
             this.endSoloGame(playerWon);
@@ -842,17 +967,44 @@ class MemeFighters {
     handleServerUpdate(serverState) {
         if (!this.gameState) return;
         
-        // Update opponent position (with interpolation)
-        const opponentNumber = this.playerNumber === 1 ? 2 : 1;
-        const serverOpponent = serverState[`player${opponentNumber}`];
-        const localOpponent = this.gameState[`player${opponentNumber}`];
+        // Update BOTH players from server state to ensure synchronization
+        const serverPlayer1 = serverState.player1;
+        const serverPlayer2 = serverState.player2;
+        const localPlayer1 = this.gameState.player1;
+        const localPlayer2 = this.gameState.player2;
         
-        if (serverOpponent && localOpponent) {
-            // Set target position for interpolation
-            localOpponent.x = serverOpponent.x;
-            localOpponent.y = serverOpponent.y;
-            localOpponent.health = serverOpponent.health;
-            localOpponent.state = serverOpponent.state || 'idle';
+        // Update Player 1
+        if (serverPlayer1 && localPlayer1) {
+            // Always update health and state from server
+            localPlayer1.health = serverPlayer1.health;
+            localPlayer1.state = serverPlayer1.state || 'idle';
+            localPlayer1.canMove = serverPlayer1.canMove !== undefined ? serverPlayer1.canMove : true;
+            localPlayer1.hasUlt = serverPlayer1.hasUlt !== undefined ? serverPlayer1.hasUlt : true;
+            localPlayer1.reversed = serverPlayer1.reversed || false;
+            localPlayer1.sizeBoosted = serverPlayer1.sizeBoosted || false;
+            
+            // Only update position if this is not the current player (to avoid input lag)
+            if (this.playerNumber !== 1) {
+                localPlayer1.x = serverPlayer1.x;
+                localPlayer1.y = serverPlayer1.y;
+            }
+        }
+        
+        // Update Player 2
+        if (serverPlayer2 && localPlayer2) {
+            // Always update health and state from server
+            localPlayer2.health = serverPlayer2.health;
+            localPlayer2.state = serverPlayer2.state || 'idle';
+            localPlayer2.canMove = serverPlayer2.canMove !== undefined ? serverPlayer2.canMove : true;
+            localPlayer2.hasUlt = serverPlayer2.hasUlt !== undefined ? serverPlayer2.hasUlt : true;
+            localPlayer2.reversed = serverPlayer2.reversed || false;
+            localPlayer2.sizeBoosted = serverPlayer2.sizeBoosted || false;
+            
+            // Only update position if this is not the current player (to avoid input lag)
+            if (this.playerNumber !== 2) {
+                localPlayer2.x = serverPlayer2.x;
+                localPlayer2.y = serverPlayer2.y;
+            }
         }
         
         this.updateUI();
@@ -1887,6 +2039,9 @@ class MemeFighters {
             screen.classList.add('hidden');
         });
         document.getElementById(screenId).classList.remove('hidden');
+        
+        // Update mobile controls visibility
+        this.updateMobileControlsVisibility();
     }
     
     // AUDIO SYSTEM - Uses meme sounds or fallback to Web Audio API

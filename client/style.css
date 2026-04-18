@@ -539,3 +539,335 @@ h1 {
 .shake {
     animation: shake 0.5s ease-in-out;
 }
+
+/* MOBILE RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    
+    .screen {
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-shadow: 
+            2px 2px 0px #FFE066,
+            4px 4px 0px #FF6B9D,
+            6px 6px 0px #00D2FF;
+    }
+    
+    .btn {
+        padding: 15px 25px;
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .menu-buttons {
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    /* Character Selection Mobile */
+    .character-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    .character-card {
+        padding: 1rem;
+        min-width: 150px;
+    }
+    
+    .character-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .character-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .character-card p {
+        font-size: 0.9rem;
+    }
+    
+    /* Difficulty Selection Mobile */
+    .difficulty-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    .difficulty-card {
+        min-width: 250px;
+        padding: 1.5rem;
+    }
+    
+    /* Game UI Mobile */
+    .game-ui {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .player-info {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .controls {
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    
+    #gameCanvas {
+        width: 100%;
+        max-width: 100vw;
+        height: auto;
+        aspect-ratio: 2/1;
+        box-sizing: border-box;
+    }
+    
+    /* Room Info Mobile */
+    #roomInfo {
+        padding: 1.5rem;
+        width: 90%;
+        max-width: 400px;
+    }
+    
+    .room-code {
+        font-size: 2.5rem;
+        padding: 8px 15px;
+        letter-spacing: 3px;
+    }
+    
+    /* Join Room Input Mobile */
+    #joinRoomInput {
+        padding: 1.5rem;
+        width: 90%;
+        max-width: 350px;
+    }
+    
+    #roomCodeInput {
+        width: 200px;
+        font-size: 1.5rem;
+        padding: 12px 15px;
+    }
+    
+    /* Messages Mobile */
+    #messages {
+        font-size: 1.8rem;
+        padding: 15px 25px;
+        max-width: 90%;
+        text-align: center;
+    }
+    
+    /* Game Over Mobile */
+    .result-container {
+        padding: 2rem;
+        width: 90%;
+        max-width: 400px;
+    }
+    
+    .meme-text {
+        font-size: 1.5rem;
+        padding: 1rem;
+    }
+}
+
+/* MOBILE CONTROLS */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 0 20px;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.mobile-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.dpad-middle {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+.dpad-btn {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #000;
+    background: #FFE066;
+    color: #000;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    box-shadow: 4px 4px 0px #000;
+    transition: all 0.1s ease;
+}
+
+.dpad-btn:active {
+    background: #FF6B9D;
+    color: #FFF;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #000;
+}
+
+.mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    width: 80px;
+    height: 50px;
+    border: 4px solid #000;
+    color: #000;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    box-shadow: 4px 4px 0px #000;
+    transition: all 0.1s ease;
+    text-transform: uppercase;
+}
+
+.attack-btn {
+    background: #FF6B9D;
+}
+
+.ability-btn {
+    background: #00D2FF;
+}
+
+.ultimate-btn {
+    background: #98FB98;
+}
+
+.action-btn:active {
+    background: #FFF;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #000;
+}
+
+/* Show mobile controls on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-controls {
+        display: flex;
+    }
+    
+    .controls {
+        display: none;
+    }
+    
+    #game {
+        padding-bottom: 180px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .character-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .character-card {
+        min-width: 200px;
+    }
+    
+    .difficulty-card {
+        min-width: 200px;
+        padding: 1rem;
+    }
+    
+    .mobile-dpad {
+        scale: 0.8;
+    }
+    
+    .mobile-actions {
+        scale: 0.8;
+    }
+    
+    .dpad-middle {
+        gap: 30px;
+    }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+    .screen {
+        padding: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .character-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .character-card {
+        padding: 0.5rem;
+        min-width: 120px;
+    }
+    
+    .character-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .difficulty-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .difficulty-card {
+        padding: 1rem;
+        min-width: 150px;
+    }
+    
+    .mobile-controls {
+        bottom: 10px;
+        padding: 0 10px;
+    }
+    
+    .mobile-dpad {
+        scale: 0.7;
+    }
+    
+    .mobile-actions {
+        scale: 0.7;
+    }
+}
